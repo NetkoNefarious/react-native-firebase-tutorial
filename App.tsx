@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import firebase from "firebase";
+import { View, Text } from "react-native";
+import {Provider} from 'react-redux'
+import {createStore, applyMiddleware} from 'redux'
+import rootReducer from './components/redux/reducers'
+import thunk from "redux-thunk";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAkKDrtxJmkbGHYvLTlBjuNiS9rTVcHzMc",
@@ -16,9 +21,11 @@ if (firebase.apps.length === 0) {
   firebase.initializeApp(firebaseConfig);
 }
 
+const store = createStore(rootReducer, applyMiddleware(thunk))
 import LandingScreen from "./components/auth/Landing";
 import RegisterScreen from "./components/auth/Register";
-import { View, Text } from "react-native";
+import LoginScreen from "./components/auth/Login";
+import MainScreen from "./components/Main";
 
 const Stack = createStackNavigator();
 export default function App() {
@@ -27,7 +34,7 @@ export default function App() {
 
   useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
-      !user ? setLoggedIn(true) : setLoggedIn(true);
+      !user ? setLoggedIn(false) : setLoggedIn(true);
       setLoaded(true);
     });
   }, []);
@@ -44,11 +51,11 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   ) : (
-    <View style={{ flex: 1, justifyContent: "center" }}>
-      <Text>User is logged in</Text>
-    </View>
-  );
+    <Provider store={store}>
+      <MainScreen />
+    </Provider>);
 }
